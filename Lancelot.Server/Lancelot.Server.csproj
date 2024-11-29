@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	
+	<PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<BaseIntermediateOutputPath>..\Lancelot.Server\obj\</BaseIntermediateOutputPath>
+	<OutputPath>..\Lancelot.Server\bin\</OutputPath>
+  </PropertyGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ProjectReference Include="..\Lancelot.Application\Lancelot.Application.csproj" />
+    <ProjectReference Include="..\Lancelot.Client\Lancelot.Client.csproj" />
+    <ProjectReference Include="..\Lancelot.Domain\Lancelot.Shared.csproj" />
+    <ProjectReference Include="..\Lancelot.Infrastructure\Lancelot.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

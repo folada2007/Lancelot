@@ -1,0 +1,92 @@
+﻿@page "/Registration"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+@if (isLoading)
+{
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    </div>
+}
+
+<div class="container vh-100">
+    <div class="registration-form w-100">
+        <h2 class="form-title">Join the Order of Lancelot</h2>
+        <EditForm Model="@registration" OnValidSubmit="RegistrationHandler">
+            <DataAnnotationsValidator />
+            <RegistrationErrorsDisplay IdentityErrors="@Message.IdentityErrors" FieldName="@nameof(registration.UserName)"/>
+            <div class="form-group">
+                <InputText id="username" @bind-Value="registration.UserName" class="form-control" placeholder="Enter Name"/>
+                <ValidationMessage class="text-danger" For="@(() => registration.UserName)" />
+            </div>
+
+            <div class="form-group">
+                <InputText id="email" @bind-Value="registration.Email" type="email" class="form-control" placeholder="Enter Email"/>
+                <ValidationMessage class="text-danger" For="@(() => registration.Email)" />
+            </div>
+
+            <div class="form-group">
+                <InputText id="password" @bind-Value="registration.Password" type="password" class="form-control" placeholder="Enter Password" />
+                <ValidationMessage class="text-danger" For="@(() => registration.Password)" />
+            </div>
+
+            <div class="form-group">
+                <InputText id="confirm-password" @bind-Value="registration.ConfirmPassword" type="password" class="form-control" placeholder="Confirm Password" />
+                <ValidationMessage class="text-danger" For="@(() => registration.ConfirmPassword)" />
+            </div>
+
+            <button disabled="@isLoading" type="submit" class="btn-submit">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                }
+                Register
+            </button>
+        </EditForm>
+
+        <div class="login_bar text-center w-100 m-3">
+            <p class="m-0">If you already have an account, please proceed with the <NavLink href="/Login">login</NavLink> to access your profile.</p>
+        </div>
+
+    </div>
+</div>
+
+
+@code{
+    UserRegistration registration = new();
+    ServerResponse Message = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync("api/Auth/CheckAuth");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            navigation.NavigateTo("/", true);
+        }
+        else
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RegistrationHandler()
+    {
+        isLoading = true;
+        var response = await http.PostAsJsonAsync("Api/User/AddUser",registration);
+        var result = await response.Content.ReadFromJsonAsync<ServerResponse>();
+        isLoading = false;
+
+        if (result.IsSuccess)
+        {
+            navigation.NavigateTo("/Login");
+        }
+        else
+        {
+            Message.IdentityErrors = result.IdentityErrors;
+            Message.ModelErrors = result.ModelErrors;
+        }
+
+    }
+}

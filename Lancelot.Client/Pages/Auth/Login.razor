@@ -1,0 +1,80 @@
+﻿@page "/Login"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+@if (isLoading)
+{
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    </div>
+}
+<div class="container vh-100">
+    <div class="registration-form w-100">
+        <h2 class="form-title">Join the Order of Lancelot</h2>
+        <EditForm Model="@login" OnValidSubmit="LoginHandler">
+            <DataAnnotationsValidator />
+            <LoginErrorsDisplay Errors="@Message.Message" />
+            <div class="form-group">
+                <InputText id="username" @bind-Value="login.UserName" class="form-control" placeholder="Enter Name" />
+                <ValidationMessage class="text-danger" For="@(() => login.UserName)" />
+            </div>
+
+            <div class="form-group">
+                <InputText id="password" @bind-Value="login.Password" type="password" class="form-control" placeholder="Enter Password" />
+                <ValidationMessage class="text-danger" For="@(() => login.Password)" />
+            </div>
+
+            <div class="mb-3 form-check">
+                <InputCheckbox @bind-Value="login.RememberMe" class="form-check-input" id="exampleCheck1" />
+                <label class="form-check-label" for="exampleCheck1">Remember Me</label>
+            </div>
+
+            <button disabled="@isLoading" type="submit" class="btn-submit">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                }
+                Login
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    LoginUserDto login = new();
+    ServerResponse Message = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync("api/Auth/CheckAuth");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            navigation.NavigateTo("/", true);
+        }
+        else
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoginHandler()
+    {
+        isLoading = true;
+        var response = await http.PostAsJsonAsync("Api/Auth/SignIn", login);
+        var result = await response.Content.ReadFromJsonAsync<ServerResponse>();
+        isLoading = false;
+
+        if (result.IsSuccess)
+        {
+            navigation.NavigateTo("/");
+        }
+        else
+        {
+            Message.Message = result.Message;
+        }
+    }
+
+}

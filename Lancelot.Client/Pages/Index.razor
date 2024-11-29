@@ -1,0 +1,45 @@
+﻿@page "/"
+@inject NavigationManager navigation
+@inject HttpClient http
+
+
+@if (isLoading)
+{
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    </div>
+}
+
+<div class="container vh-100">
+    <div class="HelloBar text-center">
+        @if (!Message.IsAuthenticated)
+        {
+            <h1>Lancelot message</h1>
+            <NavLink href="/Registration">Go</NavLink>
+        }
+        else
+        {
+            <h1>Welcome @Message.Message</h1>
+            <button class="play btn btn-light">Acquire Lancelot</button>
+        }
+
+    </div>
+</div>
+
+@code{
+    ServerResponse Message = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync("api/Auth/CheckAuth");
+        var result = await response.Content.ReadFromJsonAsync<ServerResponse>();
+        isLoading = false;
+
+        if (result.IsSuccess)
+        {
+            Message.IsAuthenticated = result.IsSuccess;
+            Message.Message = result.Message;
+        }
+    }
+}

@@ -1,0 +1,41 @@
+﻿
+@foreach (var errors in GetIdentityErrors())
+{
+    <p class="text-danger">@errors</p>    
+}
+
+
+@if (IdentityErrors != null)
+{
+    @foreach (var errors in IdentityErrors)
+    {
+        <p class="text-danger">@errors</p>
+    }
+}
+
+
+@code {
+    [Parameter] public IEnumerable<string>? IdentityErrors { get; set; }
+    [Parameter] public Dictionary<string, string[]>? ModelErrors { get; set; }
+    [Parameter] public string? FieldName { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if(IdentityErrors != null && FieldName == null)
+        {
+            throw new Exception();
+        }
+    }
+
+    private IEnumerable<string> GetIdentityErrors()
+    {
+        if (ModelErrors != null && FieldName != null)
+        {
+            if (ModelErrors.ContainsKey(FieldName))
+            {
+                return ModelErrors[FieldName];
+            }
+        }
+        return Enumerable.Empty<string>();
+    }
+}
