@@ -1,0 +1,128 @@
+﻿@page "/LancelotGame"
+@inject HttpClient http
+
+
+<div class="field" @ref="Reference" tabindex="0" @onkeydown="Move" 
+style="width:@($"{WIDTH}px");
+    height:@($"{HEIGHT}px");
+    background-color:cadetblue;
+    position:relative;">
+
+    <div class="player" 
+    style="width:@($"{player.Size}px");
+        height:@($"{player.Size}px");
+        background-color:beige;
+        transform:translate(@($"{player.X}px, {player.Y}px"));
+        position:absolute;">
+    </div>
+
+    @foreach (var bullet in bullets)
+    {
+        <div class="bullet" 
+        style="width:5px;
+            height:5px;
+            background-color:blueviolet;
+            transform:translate(@($"{bullet.X}px,{bullet.Y}px"));
+            position:absolute;">
+        </div>
+    }
+
+    @foreach (var enemy in enemies)
+    {
+        <div class="enemy" 
+        style="width:@($"{enemy.Size}px");
+                height:@($"{enemy.Size}px");
+                position:absolute;
+                background-color:black;
+                transform:translate(@($"{enemy.X}px, {enemy.Y}px"));">
+        </div>
+    }
+
+    <button type="button" @onclick="AddEnemy">Add enemy</button>
+
+</div>
+
+
+
+@code {
+    const int WIDTH = 500;
+    const int HEIGHT = 500;
+    ElementReference Reference;
+
+    Player player = new();
+    List<Bullets> bullets = new();
+    List<Enemy> enemies = new();
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Reference.FocusAsync();    
+        }
+    }
+
+    private async Task Move(KeyboardEventArgs e)
+    {
+        switch (e.Key.ToLower())
+        {
+            case "w":
+                if(player.Y > 0)  player.Y -= player.Speed;
+                break;
+            case "a":
+                if (player.X > 0) player.X -= player.Speed;
+                break;
+            case "s":
+                if (player.Y + player.Size < HEIGHT) player.Y += player.Speed;
+                break;
+            case "d":
+                if (player.X + player.Size < WIDTH) player.X += player.Speed;
+                break;
+            case " ":
+                await Shot();
+                break;
+        }
+        StateHasChanged();
+    }
+
+    public async Task Shot()
+    {
+        var bullet = new Bullets
+            {
+                X = player.X + player.Size / 2,
+                Y = player.Y + player.Size / 2,
+                IsAlive = true,
+                Speed = player.Speed * 2
+            };
+        bullets.Add(bullet);
+
+        while (bullet.IsAlive)
+        {
+            bullet.X += bullet.Speed;
+            await Task.Delay(16);
+
+            if (bullet.X > WIDTH)
+            {
+                bullet.IsAlive = false;
+            }
+            StateHasChanged();
+        }
+
+        bullets.RemoveAll(a => !a.IsAlive);
+    }
+
+    private void AddEnemy()
+    {
+        Random rndPosition = new Random();
+
+        var enemy = new Enemy
+            {
+                X = rndPosition.Next(250,450), 
+                Y = rndPosition.Next(0, 450),
+                Size = 50,
+                HitPoint = 3,
+                IsAlive = true
+            };
+        if (enemies.Count < 3)
+            enemies.Add(enemy);
+    }
+}
