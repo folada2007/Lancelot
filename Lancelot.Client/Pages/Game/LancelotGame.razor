@@ -14,6 +14,7 @@ style="width:@($"{WIDTH}px");
         background-color:beige;
         transform:translate(@($"{player.X}px, {player.Y}px"));
         position:absolute;">
+        <h1>@ReBulletMes</h1>
     </div>
 
     @foreach (var bullet in bullets)
@@ -37,9 +38,6 @@ style="width:@($"{WIDTH}px");
                 transform:translate(@($"{enemy.X}px, {enemy.Y}px"));">
         </div>
     }
-
-    <button type="button" @onclick="AddEnemy">Add enemy</button>
-
 </div>
 
 
@@ -52,12 +50,15 @@ style="width:@($"{WIDTH}px");
     Player player = new();
     List<Bullets> bullets = new();
     List<Enemy> enemies = new();
+    string ReBulletMes = "Готов к бою";
 
     protected override async void OnAfterRender(bool firstRender)
     {
+        await AddEnemy();
+
         if (firstRender)
         {
-            await Reference.FocusAsync();    
+            await Reference.FocusAsync();
         }
     }
 
@@ -91,13 +92,16 @@ style="width:@($"{WIDTH}px");
                 X = player.X + player.Size / 2,
                 Y = player.Y + player.Size / 2,
                 IsAlive = true,
-                Speed = player.Speed * 2
+                Speed = 12
             };
         bullets.Add(bullet);
 
         while (bullet.IsAlive)
         {
             bullet.X += bullet.Speed;
+
+            IsCollision(bullet);
+
             await Task.Delay(16);
 
             if (bullet.X > WIDTH)
@@ -110,8 +114,10 @@ style="width:@($"{WIDTH}px");
         bullets.RemoveAll(a => !a.IsAlive);
     }
 
-    private void AddEnemy()
+    private async Task AddEnemy()
     {
+        await Task.Delay(3000);
+
         Random rndPosition = new Random();
 
         var enemy = new Enemy
@@ -124,5 +130,29 @@ style="width:@($"{WIDTH}px");
             };
         if (enemies.Count < 3)
             enemies.Add(enemy);
+    }
+
+    private void IsCollision(Bullets bullet)
+    {
+        foreach (var enemy in enemies)
+        {
+            if (bullet.X < enemy.X + enemy.Size &&
+                bullet.X + 5 > enemy.X &&
+                bullet.Y < enemy.Y + enemy.Size &&
+                bullet.Y + 5 > enemy.Y)
+            {
+                bullet.IsAlive = false;
+
+                if (enemy.HitPoint > 0)
+                {
+                    enemy.HitPoint--;
+                }
+                if (enemy.HitPoint <= 0)
+                {
+                    enemy.IsAlive = false;    
+                }
+            }
+        }
+        enemies.RemoveAll(e => !e.IsAlive);
     }
 }
