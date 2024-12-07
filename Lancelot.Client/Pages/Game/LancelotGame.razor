@@ -1,6 +1,7 @@
 ﻿@page "/LancelotGame"
 @inject HttpClient http
 
+<p>@BulletCount</p>
 
 <div class="field" @ref="Reference" tabindex="0" @onkeydown="Move" 
 style="width:@($"{WIDTH}px");
@@ -14,7 +15,6 @@ style="width:@($"{WIDTH}px");
         background-color:beige;
         transform:translate(@($"{player.X}px, {player.Y}px"));
         position:absolute;">
-        <h1>@ReBulletMes</h1>
     </div>
 
     @foreach (var bullet in bullets)
@@ -45,12 +45,16 @@ style="width:@($"{WIDTH}px");
 @code {
     const int WIDTH = 500;
     const int HEIGHT = 500;
+    const int BULLETCOUNT = 20;
     ElementReference Reference;
 
+    private Task _isRecharge;
     Player player = new();
     List<Bullets> bullets = new();
     List<Enemy> enemies = new();
-    string ReBulletMes = "Готов к бою";
+    static DateTime LastShot = DateTime.MinValue;
+    static int BulletCount = BULLETCOUNT;
+
 
     protected override async void OnAfterRender(bool firstRender)
     {
@@ -79,22 +83,34 @@ style="width:@($"{WIDTH}px");
                 if (player.X + player.Size < WIDTH) player.X += player.Speed;
                 break;
             case " ":
-                await Shot();
+                if (BulletCount > 0 && BulletCount <= BULLETCOUNT)
+                    await Shot();
+                break;
+            case "r":
+                await StartRecharge();
                 break;
         }
         StateHasChanged();
     }
 
-    public async Task Shot()
+    private async Task Shot()
     {
+        if (DateTime.Now - LastShot < TimeSpan.FromMilliseconds(100))
+        {
+            return;
+        }
+        LastShot = DateTime.Now;
+
+        BulletCount--;
         var bullet = new Bullets
             {
                 X = player.X + player.Size / 2,
                 Y = player.Y + player.Size / 2,
                 IsAlive = true,
-                Speed = 12
+                Speed = 12,
             };
         bullets.Add(bullet);
+
 
         while (bullet.IsAlive)
         {
@@ -112,6 +128,31 @@ style="width:@($"{WIDTH}px");
         }
 
         bullets.RemoveAll(a => !a.IsAlive);
+    }
+
+    private Task StartRecharge()
+    {
+        if (_isRecharge == null || _isRecharge.IsCompleted)
+        {
+            _isRecharge = Recharge();    
+        }
+        return _isRecharge;
+    }
+
+    private async Task Recharge()
+    {
+        if (BulletCount < BULLETCOUNT)
+        {
+            for (int i = 0; i < BulletCount; i++)
+            {
+                if (BulletCount >= BULLETCOUNT)
+                    break;
+
+                await Task.Delay(200);
+                BulletCount++;
+                StateHasChanged();
+            }    
+        }    
     }
 
     private async Task AddEnemy()
@@ -155,4 +196,5 @@ style="width:@($"{WIDTH}px");
         }
         enemies.RemoveAll(e => !e.IsAlive);
     }
+
 }
