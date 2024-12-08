@@ -89,4 +89,6 @@
     color: #ffcc00;
 }
 
-
+.player {
+    transition: transform 0.05s linear
+}
