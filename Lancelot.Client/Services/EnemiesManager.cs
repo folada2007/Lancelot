@@ -1,4 +1,5 @@
 ﻿using Lancelot.Shared.DTOs.Game;
+using System;
 
 namespace Lancelot.Client.Services
 {
@@ -21,12 +22,29 @@ namespace Lancelot.Client.Services
             {
                 X = rndPosition.Next(250, 450),
                 Y = rndPosition.Next(0, 450),
-                Size = 50,
+                Size = 100,
                 HitPoint = 3,
                 IsAlive = true
             };
-            if (_gameStateManager.enemies.Count < 3)
+
+            if (_gameStateManager.enemies.Count > 0)
+            {
+                foreach (var enemies in _gameStateManager.enemies)
+                {
+                    if (enemy.X < enemies.X + enemies.Size &&
+                   enemy.X + 50 > enemies.X &&
+                   enemy.Y < enemies.Y + enemies.Size &&
+                   enemy.Y + 50 > enemies.Y)
+                    {
+                        enemy.IsAlive = false;
+                    }
+                }
+            }
+
+            if (_gameStateManager.enemies.Count < 3 && enemy.IsAlive)
                 _gameStateManager.enemies.Add(enemy);
+
+            _gameStateManager.GameStateUpdate();
         }
 
         public void IsCollision(Bullets bullet)
@@ -44,7 +62,7 @@ namespace Lancelot.Client.Services
                     {
                         enemy.HitPoint--;
                     }
-                    if (enemy.HitPoint <= 0)
+                    if (enemy.HitPoint == 0) 
                     {
                         enemy.IsAlive = false;
                     }

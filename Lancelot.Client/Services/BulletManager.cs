@@ -19,40 +19,48 @@ namespace Lancelot.Client.Services
 
         public async Task Shot()
         {
-            if (DateTime.Now - LastShot < TimeSpan.FromMilliseconds(100))
+            if (DateTime.Now - LastShot < TimeSpan.FromMilliseconds(200))
             {
                 return;
             }
             LastShot = DateTime.Now;
 
+            var bullet = CreateBullet();
+
+            await MoveBullets(bullet);
+        }
+
+        private async Task MoveBullets(Bullets bullet) 
+        {
+            while (bullet.IsAlive)
+            {
+                bullet.X += bullet.Speed;
+
+                await Task.Delay(16);
+
+                _enemiesManager.IsCollision(bullet);
+
+                if (bullet.X > PlayerManager.WIDTH)
+                {
+                    bullet.IsAlive = false;
+                }
+                _gameState.GameStateUpdate();
+            }
+            _gameState.bullets.RemoveAll(b => !b.IsAlive);
+        }
+
+        private Bullets CreateBullet() 
+        {
             PlayerManager.BulletCount--;
             var bullet = new Bullets
             {
                 X = _gameState.player.X + _gameState.player.Size / 2,
                 Y = _gameState.player.Y + _gameState.player.Size / 2,
                 IsAlive = true,
-                Speed = 12,
+                Speed = 40,
             };
             _gameState.bullets.Add(bullet);
-
-
-            while (bullet.IsAlive)
-            {
-                bullet.X += bullet.Speed;
-
-               _enemiesManager.IsCollision(bullet);
-
-                await Task.Delay(16);
-
-                if (bullet.X > PlayerManager.WIDTH)
-                {
-                    bullet.IsAlive = false;
-                }
-
-                _gameState.GameStateUpdate();
-            }
-
-            _gameState.bullets.RemoveAll(a => !a.IsAlive);
+            return bullet;
         }
 
         public Task StartRecharge()
@@ -79,5 +87,6 @@ namespace Lancelot.Client.Services
                 }
             }
         }
+
     }
 }

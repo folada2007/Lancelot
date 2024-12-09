@@ -4,7 +4,7 @@ namespace Lancelot.Client.Services
 {
     public class PlayerManager
     {
-        public const int WIDTH = 500;
+        public const int WIDTH = 1000;
         public const int HEIGHT = 500;
         public const int BULLETCOUNT = 20;
         public static int BulletCount = BULLETCOUNT;

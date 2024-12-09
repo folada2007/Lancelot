@@ -16,19 +16,19 @@ style="width:@($"{PlayerManager.WIDTH}px");
     <div class="player"
     style="width:@($"{gameStateManager.player.Size}px");
         height:@($"{gameStateManager.player.Size}px");
-        background-color:beige;
         transform:translate(@($"{gameStateManager.player.X}px, {gameStateManager.player.Y}px"));
         position:absolute;">
+        <img class="player_face" src="/img/Lancelot-alfa.png" alt="Alternate Text" style="width:@($"{gameStateManager.player.Size}px");height:@($"{gameStateManager.player.Size}px");" />
     </div>
 
     @foreach (var bullet in gameStateManager.bullets)
     {
         <div class="bullet" 
-        style="width:5px;
-            height:5px;
-            background-color:blueviolet;
+        style="width:20px;
+            height:20px;
             transform:translate(@($"{bullet.X}px,{bullet.Y}px"));
             position:absolute;">
+        <img src="/img/Bullet.png" alt="Alternate Text" style="width:30px;height:20px;"/>
         </div>
     }
 
@@ -38,8 +38,8 @@ style="width:@($"{PlayerManager.WIDTH}px");
         style="width:@($"{enemy.Size}px");
                 height:@($"{enemy.Size}px");
                 position:absolute;
-                background-color:black;
                 transform:translate(@($"{enemy.X}px, {enemy.Y}px"));">
+            <img src="/img/Glazgo.png" alt="Alternate Text" style="width:@($"{enemy.Size}px");height:@($"{enemy.Size}px");" />
         </div>
     }
 </div>
@@ -47,7 +47,7 @@ style="width:@($"{PlayerManager.WIDTH}px");
 @code{
     private bool Sub;
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await Enemies.AddEnemy();
 
@@ -57,6 +57,7 @@ style="width:@($"{PlayerManager.WIDTH}px");
             Sub = true;
         }
     }
+
     private async Task Move(KeyboardEventArgs e)
     {
         await Player.Move(e);    
