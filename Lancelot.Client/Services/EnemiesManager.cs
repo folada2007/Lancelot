@@ -1,5 +1,4 @@
 ﻿using Lancelot.Shared.DTOs.Game;
-using System;
 
 namespace Lancelot.Client.Services
 {
@@ -20,8 +19,8 @@ namespace Lancelot.Client.Services
 
             var enemy = new Enemy
             {
-                X = rndPosition.Next(250, 450),
-                Y = rndPosition.Next(0, 450),
+                X = rndPosition.Next(500, 900),
+                Y = rndPosition.Next(0, 400),
                 Size = 100,
                 HitPoint = 3,
                 IsAlive = true
@@ -32,9 +31,9 @@ namespace Lancelot.Client.Services
                 foreach (var enemies in _gameStateManager.enemies)
                 {
                     if (enemy.X < enemies.X + enemies.Size &&
-                   enemy.X + 50 > enemies.X &&
+                   enemy.X + enemy.Size > enemies.X &&
                    enemy.Y < enemies.Y + enemies.Size &&
-                   enemy.Y + 50 > enemies.Y)
+                   enemy.Y + enemy.Size > enemies.Y)
                     {
                         enemy.IsAlive = false;
                     }

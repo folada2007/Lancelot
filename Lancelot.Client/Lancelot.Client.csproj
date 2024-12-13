@@ -12,6 +12,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.11" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.Views.Blazor" Version="3.116.1" />
   </ItemGroup>
 	
   <ItemGroup>
@@ -19,6 +21,7 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Folder Include="Components\GameComponents\" />
     <Folder Include="Models\" />
   </ItemGroup>
 </Project>

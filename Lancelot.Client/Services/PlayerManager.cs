@@ -6,7 +6,7 @@ namespace Lancelot.Client.Services
     {
         public const int WIDTH = 1000;
         public const int HEIGHT = 500;
-        public const int BULLETCOUNT = 20;
+        public const int BULLETCOUNT = 220;
         public static int BulletCount = BULLETCOUNT;
 
         private readonly GameStateManager _gameState;
@@ -17,7 +17,6 @@ namespace Lancelot.Client.Services
             _gameState = gameStateManager;
             _bulletManager = bulletManager;
         }
-
         public async Task Move(KeyboardEventArgs e)
         {
             switch (e.Key.ToLower())
@@ -34,12 +33,11 @@ namespace Lancelot.Client.Services
                 case "d":
                     if (_gameState.player.X + _gameState.player.Size < WIDTH) _gameState.player.X += _gameState.player.Speed;
                     break;
-                case " ":
-                    if (BulletCount > 0 && BulletCount <= BULLETCOUNT)
-                        await _bulletManager.Shot();
-                    break;
                 case "r":
                     await _bulletManager.StartRecharge();
+                    break;
+                case "f":
+                    await _bulletManager.Shot();
                     break;
             }
         }

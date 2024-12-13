@@ -8,7 +8,6 @@ namespace Lancelot.Client.Services
         public List<Bullets> bullets = new();
         public Player player = new();
         public List<Enemy> enemies = new();
-
         public void GameStateUpdate()
         {
             UpdateState?.Invoke();

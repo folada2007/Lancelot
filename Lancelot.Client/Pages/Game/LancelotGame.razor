@@ -1,65 +1,98 @@
-﻿@page "/LancelotGame"
+﻿@page "/Game"
 @inject HttpClient http
-@inject PlayerManager Player
-@inject BulletManager Bullet
-@inject EnemiesManager Enemies
-@inject GameStateManager gameStateManager
+@inject GameStateManager gameState
+@inject BulletManager bulletManager
+@inject PlayerManager playerManager
+@inject EnemiesManager enemiesManager
+@using SkiaSharp
+@using SkiaSharp.Views.Blazor
 
-<p>@PlayerManager.BulletCount</p>
-
-<div class="field" tabindex="0" @onkeydown="Move" 
-style="width:@($"{PlayerManager.WIDTH}px");
-    height:@($"{PlayerManager.HEIGHT}px");
-    background-color:cadetblue;
-    position:relative;">
-
-    <div class="player"
-    style="width:@($"{gameStateManager.player.Size}px");
-        height:@($"{gameStateManager.player.Size}px");
-        transform:translate(@($"{gameStateManager.player.X}px, {gameStateManager.player.Y}px"));
-        position:absolute;">
-        <img class="player_face" src="/img/Lancelot-alfa.png" alt="Alternate Text" style="width:@($"{gameStateManager.player.Size}px");height:@($"{gameStateManager.player.Size}px");" />
-    </div>
-
-    @foreach (var bullet in gameStateManager.bullets)
-    {
-        <div class="bullet" 
-        style="width:20px;
-            height:20px;
-            transform:translate(@($"{bullet.X}px,{bullet.Y}px"));
-            position:absolute;">
-        <img src="/img/Bullet.png" alt="Alternate Text" style="width:30px;height:20px;"/>
-        </div>
-    }
-
-    @foreach (var enemy in gameStateManager.enemies)
-    {
-        <div class="enemy" 
-        style="width:@($"{enemy.Size}px");
-                height:@($"{enemy.Size}px");
-                position:absolute;
-                transform:translate(@($"{enemy.X}px, {enemy.Y}px"));">
-            <img src="/img/Glazgo.png" alt="Alternate Text" style="width:@($"{enemy.Size}px");height:@($"{enemy.Size}px");" />
-        </div>
-    }
+<div class="field d-flex justify-content-center">
+    <SKCanvasView style="@($"width:{PlayerManager.WIDTH}; height:{PlayerManager.HEIGHT}px")" OnPaintSurface="OnPaintSurface" @ref="_refCanvas" tabindex="0" @onkeydown="Move" />
 </div>
 
 @code{
-    private bool Sub;
+    private SKCanvasView _refCanvas;
+
+    const string PLAYER_IMAGE = "/img/Lancelot-alfa.png";
+    const string BULLET_IMAGE = "/img/Bullet.png";
+    const string ENEMIES_IMAGE = "/img/Glazgo.png";
+    SKBitmap _playerFrame;
+    SKBitmap _bulletFrame;
+    SKBitmap _enemiesFrame;
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await Enemies.AddEnemy();
+        await enemiesManager.AddEnemy();
 
-        if (firstRender && !Sub)
+        if(firstRender)
         {
-            gameStateManager.UpdateState += StateHasChanged;
-            Sub = true;
+            gameState.UpdateState += _refCanvas.Invalidate;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _playerFrame = await GetDecodeImage(PLAYER_IMAGE);
+        _bulletFrame = await GetDecodeImage(BULLET_IMAGE);
+        _enemiesFrame = await GetDecodeImage(ENEMIES_IMAGE);
+    }
+
+    private async Task<SKBitmap> GetDecodeImage(string path)
+    {
+        var ByteImg = await http.GetByteArrayAsync(path);
+        var Stream = new MemoryStream(ByteImg);
+        var BitMap = SKBitmap.Decode(Stream);
+
+        return BitMap;
+    }
+
+    private void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    {
+        var player = gameState.player;
+        var canvas = e.Surface.Canvas;
+
+        canvas.Clear(SKColors.CadetBlue);
+
+        var playerDraw = new SKRect(
+            player.X,
+            player.Y,
+            player.X + player.Size,
+            player.Y + player.Size);
+        canvas.DrawBitmap(_playerFrame, playerDraw);
+
+        if (gameState.bullets.Count > 0)
+        {
+            foreach (var bullet in gameState.bullets)
+            {
+                var bulletDraw = new SKRect(
+                    bullet.X,
+                    bullet.Y,
+                    bullet.X + 15,
+                    bullet.Y + 15);
+                canvas.DrawBitmap(_bulletFrame, bulletDraw);
+            }
+        }   
+
+        if (gameState.enemies.Count > 0)
+        {
+            foreach (var enemy in gameState.enemies)
+            {
+                var enemiesDraw = new SKRect(
+                    enemy.X,
+                    enemy.Y,
+                    enemy.X + enemy.Size,
+                    enemy.Y + enemy.Size);
+                canvas.DrawBitmap(_enemiesFrame, enemiesDraw);
+            }
         }
     }
 
     private async Task Move(KeyboardEventArgs e)
     {
-        await Player.Move(e);    
+        await playerManager.Move(e);
+        await Task.Delay(16);
+        _refCanvas.Invalidate();
     }
 }
