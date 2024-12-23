@@ -1,10 +1,13 @@
 using Lancelot.Client;
 using Lancelot.Client.Services;
+using Lancelot.Client.Services.Resourse;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+builder.Services.AddScoped<GameRenderer>();
+builder.Services.AddScoped<ResourceLoader>();
 builder.Services.AddScoped<PlayerManager>();
 builder.Services.AddScoped<EnemiesManager>();
 builder.Services.AddScoped<BulletManager>();

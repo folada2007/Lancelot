@@ -6,16 +6,17 @@ namespace Lancelot.Client.Services
     public class BulletManager
     {
         private Task? _isRecharge;
-        static DateTime LastShot = DateTime.MinValue;
+        DateTime LastShot = DateTime.MinValue;
         private readonly GameStateManager _gameState;
         private readonly EnemiesManager _enemiesManager;
 
+        public bool IsShooting;
         public BulletManager(GameStateManager gameState, EnemiesManager enemiesManager)
         {
             _enemiesManager = enemiesManager;
             _gameState = gameState;
         }
-        public async Task Shot()
+        public void Shot()
         {
             PlayerManager.BulletCount--;
 
@@ -23,42 +24,36 @@ namespace Lancelot.Client.Services
             {
                 return;
             }
+
             LastShot = DateTime.Now;
 
-            var bullet = CreateBullet();
-            await MoveBullets(bullet);
-        }
-
-        private async Task MoveBullets(Bullets bullet) 
-        {
-            while (bullet.IsAlive)
-            {
-                bullet.X += bullet.Speed;
-                await Task.Delay(16);
-
-                _enemiesManager.IsCollision(bullet);
-
-                if (bullet.X > PlayerManager.WIDTH) 
-                {
-                    bullet.IsAlive = false;
-                }
-                _gameState.GameStateUpdate();
-            }
-            _gameState.bullets.RemoveAll(b => !b.IsAlive);
-        }
-
-        private Bullets CreateBullet() 
-        {
             var bullet = new Bullets
             {
                 X = _gameState.player.X + _gameState.player.Size / 2,
                 Y = _gameState.player.Y + _gameState.player.Size / 2,
                 IsAlive = true,
-                Speed = 25,
+                Speed = 33.3f
             };
-
             _gameState.bullets.Add(bullet);
-            return bullet;
+        }
+
+        public void UpdateBulletPosition() 
+        {
+            if (_gameState.bullets.Count == 0)
+                return;
+
+            foreach (var bullet in _gameState.bullets) 
+            {
+                bullet.X += bullet.Speed;
+
+                _enemiesManager.IsCollision(bullet);
+
+                if (bullet.X > PlayerManager.WIDTH)
+                {
+                    bullet.IsAlive = false;
+                }
+            }
+            _gameState.bullets.RemoveAll(b => !b.IsAlive);
         }
 
         public Task StartRecharge()

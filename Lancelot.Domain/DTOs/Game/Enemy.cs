@@ -2,8 +2,8 @@
 {
     public class Enemy
     {
-        public int X {  get; set; }
-        public int Y {  get; set; }
+        public float X {  get; set; }
+        public float Y {  get; set; }
         public int HitPoint { get; set; }
         public int Size { get; set; }
         public bool IsAlive { get; set; }

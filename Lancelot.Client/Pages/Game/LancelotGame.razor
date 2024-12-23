@@ -1,98 +1,60 @@
 ﻿@page "/Game"
-@inject HttpClient http
-@inject GameStateManager gameState
-@inject BulletManager bulletManager
 @inject PlayerManager playerManager
-@inject EnemiesManager enemiesManager
+@inject BulletManager bulletManager
+@inject GameRenderer render 
 @using SkiaSharp
 @using SkiaSharp.Views.Blazor
 
 <div class="field d-flex justify-content-center">
-    <SKCanvasView style="@($"width:{PlayerManager.WIDTH}; height:{PlayerManager.HEIGHT}px")" OnPaintSurface="OnPaintSurface" @ref="_refCanvas" tabindex="0" @onkeydown="Move" />
+    <SKCanvasView Width="@PlayerManager.WIDTH" Height="@PlayerManager.HEIGHT" OnPaintSurface="OnPaintSurface" @ref="_refCanvas" tabindex="0" @onkeydown="Move" @onkeyup="StopMove" />
 </div>
 
 @code{
-    private SKCanvasView _refCanvas;
-
-    const string PLAYER_IMAGE = "/img/Lancelot-alfa.png";
-    const string BULLET_IMAGE = "/img/Bullet.png";
-    const string ENEMIES_IMAGE = "/img/Glazgo.png";
-    SKBitmap _playerFrame;
-    SKBitmap _bulletFrame;
-    SKBitmap _enemiesFrame;
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await enemiesManager.AddEnemy();
-
-        if(firstRender)
-        {
-            gameState.UpdateState += _refCanvas.Invalidate;
-        }
-    }
+    SKCanvasView? _refCanvas;
 
     protected override async Task OnInitializedAsync()
     {
-        _playerFrame = await GetDecodeImage(PLAYER_IMAGE);
-        _bulletFrame = await GetDecodeImage(BULLET_IMAGE);
-        _enemiesFrame = await GetDecodeImage(ENEMIES_IMAGE);
-    }
-
-    private async Task<SKBitmap> GetDecodeImage(string path)
-    {
-        var ByteImg = await http.GetByteArrayAsync(path);
-        var Stream = new MemoryStream(ByteImg);
-        var BitMap = SKBitmap.Decode(Stream);
-
-        return BitMap;
+        await render.LoadResources();
+        _ = GameLoop();
     }
 
     private void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
-        var player = gameState.player;
-        var canvas = e.Surface.Canvas;
+        using var canvas = e.Surface.Canvas;
 
-        canvas.Clear(SKColors.CadetBlue);
-
-        var playerDraw = new SKRect(
-            player.X,
-            player.Y,
-            player.X + player.Size,
-            player.Y + player.Size);
-        canvas.DrawBitmap(_playerFrame, playerDraw);
-
-        if (gameState.bullets.Count > 0)
-        {
-            foreach (var bullet in gameState.bullets)
-            {
-                var bulletDraw = new SKRect(
-                    bullet.X,
-                    bullet.Y,
-                    bullet.X + 15,
-                    bullet.Y + 15);
-                canvas.DrawBitmap(_bulletFrame, bulletDraw);
-            }
-        }   
-
-        if (gameState.enemies.Count > 0)
-        {
-            foreach (var enemy in gameState.enemies)
-            {
-                var enemiesDraw = new SKRect(
-                    enemy.X,
-                    enemy.Y,
-                    enemy.X + enemy.Size,
-                    enemy.Y + enemy.Size);
-                canvas.DrawBitmap(_enemiesFrame, enemiesDraw);
-            }
-        }
+        render.Render(canvas);
     }
 
-    private async Task Move(KeyboardEventArgs e)
+    private async Task GameLoop()
     {
-        await playerManager.Move(e);
-        await Task.Delay(16);
-        _refCanvas.Invalidate();
+        var LastUpdateTime = DateTime.Now;
+
+        while (true)
+        {
+            var CurrentTime = DateTime.Now;
+            var DeltaTime = (CurrentTime - LastUpdateTime).TotalSeconds;
+
+            playerManager.DirectionOfMovement(playerManager._direction);
+
+            bulletManager.UpdateBulletPosition();
+
+            render.UpdateBackground();
+
+            _refCanvas?.Invalidate();
+
+            LastUpdateTime = DateTime.Now;
+
+            await Task.Delay(16);
+        }    
+    }
+
+    private void Move(KeyboardEventArgs e)
+    {
+         playerManager.Move(e);
+    }
+
+    private void StopMove()
+    {
+       playerManager.StopMove();
     }
 }

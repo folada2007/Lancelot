@@ -20,7 +20,7 @@ namespace Lancelot.Client.Services
             var enemy = new Enemy
             {
                 X = rndPosition.Next(500, 900),
-                Y = rndPosition.Next(0, 400),
+                Y = PlayerManager.HEIGHT - 100,
                 Size = 100,
                 HitPoint = 3,
                 IsAlive = true
@@ -43,7 +43,7 @@ namespace Lancelot.Client.Services
             if (_gameStateManager.enemies.Count < 3 && enemy.IsAlive)
                 _gameStateManager.enemies.Add(enemy);
 
-            _gameStateManager.GameStateUpdate();
+            //_gameStateManager.GameStateUpdate();
         }
 
         public void IsCollision(Bullets bullet)
